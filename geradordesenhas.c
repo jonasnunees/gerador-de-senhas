@@ -3,34 +3,56 @@
 #include <time.h>
 #include <string.h>
 
+void embaralhar(char *senha, int comprimento) {
+    for (int i = comprimento - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        char temp = senha[i];
+        senha[i] = senha[j];
+        senha[j] = temp;
+    }
+}
+
 void gerarSenha(int comprimento, int incluirMaiusculas, int incluirMinusculas, int incluirNumeros, int incluirEspeciais) {
-   const char caracteresMaiusculos[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-   const char caracteresMinusculos[] = "abcdefghijklmnopqrstuvwxyz";
-   const char caracteresNumeros[] = "0123456789";
-   const char caracteresEspeciais[] = "!@#$%^&*()";
+    const char caracteresMaiusculos[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const char caracteresMinusculos[] = "abcdefghijklmnopqrstuvwxyz";
+    const char caracteresNumeros[] = "0123456789";
+    const char caracteresEspeciais[] = "!@#$%^&*()";
 
-   char caracteresPermitidos[100] = "";
+    char caracteresPermitidos[100] = "";
+    char senha[100] = "";
+    int indice = 0;
 
-   if (incluirMaiusculas) {
-      strcat(caracteresPermitidos, caracteresMaiusculos);
-   }
-   if (incluirMinusculas) {
-      strcat(caracteresPermitidos, caracteresMinusculos);
-   }
-   if (incluirNumeros) {
-      strcat(caracteresPermitidos, caracteresNumeros);
-   }
-   if (incluirEspeciais) {
-      strcat(caracteresPermitidos, caracteresEspeciais);
-   }
+    srand(time(0));
 
-   srand(time(0));
+    // Etapa 1: Adicionar pelo menos um de cada tipo selecionado
+    if (incluirMaiusculas) {
+        senha[indice++] = caracteresMaiusculos[rand() % strlen(caracteresMaiusculos)];
+        strcat(caracteresPermitidos, caracteresMaiusculos);
+    }
+    if (incluirMinusculas) {
+        senha[indice++] = caracteresMinusculos[rand() % strlen(caracteresMinusculos)];
+        strcat(caracteresPermitidos, caracteresMinusculos);
+    }
+    if (incluirNumeros) {
+        senha[indice++] = caracteresNumeros[rand() % strlen(caracteresNumeros)];
+        strcat(caracteresPermitidos, caracteresNumeros);
+    }
+    if (incluirEspeciais) {
+        senha[indice++] = caracteresEspeciais[rand() % strlen(caracteresEspeciais)];
+        strcat(caracteresPermitidos, caracteresEspeciais);
+    }
 
-   for (int i = 0; i < comprimento; i++) {
-      int index = rand() % strlen(caracteresPermitidos);
-      printf("%c", caracteresPermitidos[index]);
-   }
-   printf("\n");
+    // Etapa 2: Preencher o restante da senha com caracteres aleatórios
+    for (; indice < comprimento; indice++) {
+        senha[indice] = caracteresPermitidos[rand() % strlen(caracteresPermitidos)];
+    }
+
+    // Etapa 3: Embaralhar a senha final
+    embaralhar(senha, comprimento);
+
+    // Exibir a senha
+    senha[comprimento] = '\0'; // finaliza a string
+    printf("Senha gerada: %s\n", senha);
 }
 
 int main() {
