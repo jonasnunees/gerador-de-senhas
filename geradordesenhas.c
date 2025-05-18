@@ -63,6 +63,11 @@ int main() {
    printf("Digite o comprimento da senha: ");
    scanf("%d", &comprimento);
 
+   if (comprimento < 12) {
+        printf("Erro: O comprimento mínimo recomendado para uma senha segura é 12 caracteres.\n");
+        return 1;
+    }
+
    printf("Incluir letras maiúsculas? (1 - Sim / 0 - Não): ");
    scanf("%d", &incluirMaiusculas);
 
@@ -74,6 +79,14 @@ int main() {
 
    printf("Incluir caracteres especiais? (1 - Sim / 0 - Não): ");
    scanf("%d", &incluirEspeciais);
+
+   int totalTipos = incluirMaiusculas + incluirMinusculas + incluirNumeros + incluirEspeciais;
+
+   if (comprimento < totalTipos) {
+       printf("Erro: Você escolheu %d tipos de caracteres, mas o comprimento da senha é %d.\n", totalTipos, comprimento);
+       printf("A senha precisa ter pelo menos %d caracteres para incluir todos os tipos.\n", totalTipos);
+       return 1; // encerra o programa com erro
+   }
 
    gerarSenha(comprimento, incluirMaiusculas, incluirMinusculas, incluirNumeros, incluirEspeciais);
 
