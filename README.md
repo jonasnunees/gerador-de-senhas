@@ -25,13 +25,13 @@ Ele permite que o usuário personalize sua senha com letras maiúsculas, minúsc
 Você pode usar o GCC para compilar:
 
 ```bash
-gcc gerador_senha.c -o gerador_senha
+gcc -o geradordesenhas.exe main.c
 ```
 
 ### 2. Execute o programa
 
 ```
-./gerador_senha
+./main.c
 ```
 
 ### 3. Interaja com o menu
