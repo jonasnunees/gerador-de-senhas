@@ -182,6 +182,25 @@ int main(int argc, char *argv[]) {
     if (argc == 1) {
         menuInterativo(); // Executa o menu interativo para o usuário escolher opções manualmente
     } else {
+        // Se o usuário pedir ajuda, exibe a explicação dos parâmetros
+        for (int i = 1; i < argc; i++) {
+            if (strcmp(argv[i], "--help") == 0) {
+                printf("\nModo de uso:\n");
+                printf("  ./geradorSenha [opções]\n\n");
+                printf("Opções disponíveis:\n");
+                printf("  -l [tamanho]       Define o tamanho da senha\n");
+                printf("  -M                 Incluir letras MAIÚSCULAS\n");
+                printf("  -m                 Incluir letras minúsculas\n");
+                printf("  -n                 Incluir números\n");
+                printf("  -s                 Incluir símbolos\n");
+                printf("  -S [serviço]       Nome do serviço (ex: Gmail)\n");
+                printf("  -U [usuário]       Nome do usuário ou e-mail\n");
+                printf("  --help             Exibe esta mensagem de ajuda\n\n");
+                printf("Exemplo:\n");
+                printf("  ./geradorSenha -l 12 -M -m -n -s -S Gmail -U usuario@email.com\n\n");
+                return 0;
+            }
+        }
         // Variáveis para armazenar configurações passadas por linha de comando
         int tamanho = 0;
         int usarMaiusculas = 0, usarMinusculas = 0, usarNumeros = 0, usarSimbolos = 0;
@@ -221,6 +240,7 @@ int main(int argc, char *argv[]) {
         } else {
             // Caso falte algum parâmetro obrigatório, exibe mensagem de ajuda para o usuário
             printf("\nParametros insuficientes.\nExemplo: ./geradorSenha -l 12 -M -m -n -s -S Gmail -U usuario@email.com\n\n");
+            printf("Use --help para ver as opções disponíveis.\n\n");
         }
     }
 
