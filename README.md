@@ -68,16 +68,10 @@ As senhas são criptografadas usando o algoritmo XOR com uma chave fixa (pode se
 
 - O arquivo senhas.txt é usado para armazenar os registros de serviço, usuário e senha (criptografada).
 
-🛠 Próximas melhorias sugeridas
-
-- Alterar a chave de criptografia para uma chave segura e variável
-- Interface gráfica (CLI avançada ou GUI com GTK)
-- Suporte a remoção e edição de senhas
-- Exportação para CSV/JSON
-- Testes automatizados
-
 👨‍💻 Autor
+
 - Desenvolvido por Jonas – apaixonado por programação, segurança e software open source.
 
 📝 Licença
+
 - Este projeto está licenciado sob a MIT License.
