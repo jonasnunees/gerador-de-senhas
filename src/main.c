@@ -4,6 +4,24 @@
 #include <string.h>     // Biblioteca para manipular strings (strcat, strlen)
 #include <locale.h>     // Biblioteca para configurar a linguagem e acentuação
 
+// Esta é a chave usada para "embaralhar" (criptografar) os caracteres da senha.
+// O valor está em hexadecimal, uma forma comum de representar números em programação.
+#define CHAVE_XOR 0x7B
+
+// Função para criptografar as senhas
+void criptografarSenha(char *senha) {
+    for (int i = 0; i < strlen(senha); i++) {
+        senha[i] ^= CHAVE_XOR;
+    }
+}
+
+// Função para descriptografar as senhas
+void descriptografarSenha(char *senha) {
+    for (int i = 0; i < strlen(senha); i++) {
+        senha[i] ^= CHAVE_XOR;
+    }
+}
+
 // Função que embaralha os caracteres da senha
 void embaralhar(char *senha, int comprimento) {
     for (int i = comprimento - 1; i > 0; i--) {
@@ -61,6 +79,9 @@ void gerarSenha(int comprimento, int incluirMaiusculas, int incluirMinusculas, i
     printf("Digite o nome do serviço para associar à senha: ");
     scanf(" %[^\n]", nomeServico);  // Lê até o Enter (inclui espaços)
 
+    // Criptografa a senha
+    criptografarSenha(senha);
+
     FILE *arquivo = fopen("senhas.txt", "a");  // Abre arquivo no modo de adicionar
 
     // Adiciona data e hora
@@ -84,10 +105,41 @@ void listarSenhas() {
     }
 
     char linha[200];
-    printf("=== Senhas Salvas ===\n");
+
+    printf("=== Senhas Salvas (descriptografadas) ===\n");
+
     while (fgets(linha, sizeof(linha), arquivo)) {
-        printf("%s", linha);
+        // Encontrar a posição da senha na linha
+        char *ptrSenha = strstr(linha, "Senha: ");
+        if (ptrSenha != NULL) {
+            ptrSenha += 7;  // Pular o texto "Senha: "
+
+            // Copiar a senha criptografada para uma nova string
+            char senhaCripto[100];
+            int i = 0;
+            // Copia até o fim da linha ou até \n
+            while (ptrSenha[i] != '\0' && ptrSenha[i] != '\n' && i < 99) {
+                senhaCripto[i] = ptrSenha[i];
+                i++;
+            }
+            senhaCripto[i] = '\0';  // Termina a string
+
+            // Descriptografa a senha
+            descriptografarSenha(senhaCripto);
+
+            // Agora imprime a linha original até "Senha: " + a senha descriptografada
+            // Para manter o serviço na impressão, vamos copiar até "Senha: "
+            char linhaServico[200];
+            strncpy(linhaServico, linha, ptrSenha - linha);
+            linhaServico[ptrSenha - linha] = '\0';
+
+            printf("%s%s\n", linhaServico, senhaCripto);
+        } else {
+            // Caso a linha não tenha senha, imprime normal
+            printf("%s", linha);
+        }
     }
+
     fclose(arquivo);
     printf("======================\n\n");
 }
@@ -106,7 +158,7 @@ int main() {
     setlocale(LC_ALL, "");
 
     int opcao;
-    
+
     do {
         // Exibe o menu para o usuário
         printf("\n======= MENU =======\n");
