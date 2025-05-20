@@ -11,6 +11,7 @@ Este é um gerenciador de senhas simples escrito em linguagem C, que permite ger
 - Suporte a dois modos de uso:
   - Modo interativo (com menus)
   - Modo direto via linha de comando
+- Ajuda via linha de comando (--help)
 - Interface amigável para usuários iniciantes
 - Código comentado e organizado para facilitar o aprendizado
 
@@ -56,6 +57,36 @@ Exemplo:
 
 ```
 ./geradorSenha -l 16 -M -m -n -s -S Gmail -U usuario@email.com
+```
+
+📘 Ajuda via Linha de Comando (--help)
+
+O programa suporta o parâmetro --help, que exibe um guia rápido de uso diretamente no terminal. Isso facilita o entendimento dos parâmetros e das opções disponíveis, sem necessidade de abrir o código-fonte ou consultar o README.
+
+✅ Como usar:
+
+```
+./geradorSenha --help
+```
+
+📋 Saída esperada:
+
+```
+Modo de uso:
+  ./geradorSenha [opções]
+
+Opções disponíveis:
+  -l [tamanho]       Define o tamanho da senha
+  -M                 Incluir letras MAIÚSCULAS
+  -m                 Incluir letras minúsculas
+  -n                 Incluir números
+  -s                 Incluir símbolos
+  -S [serviço]       Nome do serviço (ex: Gmail)
+  -U [usuário]       Nome do usuário ou e-mail
+  --help             Exibe esta mensagem de ajuda
+
+Exemplo:
+  ./geradorSenha -l 12 -M -m -n -s -S Gmail -U usuario@email.com
 ```
 
 🔒 Segurança
