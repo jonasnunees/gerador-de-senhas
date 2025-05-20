@@ -1,141 +1,109 @@
-#include <stdio.h>      // Biblioteca padrão de entrada e saída (printf, scanf)
-#include <stdlib.h>     // Biblioteca para funções como rand() e system()
-#include <time.h>       // Biblioteca para trabalhar com tempo (seed aleatória e data/hora)
-#include <string.h>     // Biblioteca para manipular strings (strcat, strlen)
-#include <locale.h>     // Biblioteca para configurar a linguagem e acentuação
+#include <stdio.h> // Biblioteca padrão de entrada e saída (printf, scanf)
+#include <stdlib.h> // Biblioteca para funções como rand() e system()
+#include <string.h> // Biblioteca para manipular strings (strcat, strlen)
+#include <time.h> // Biblioteca para trabalhar com tempo (seed aleatória e data/hora)
+#include <ctype.h> // Biblioteca padrão da linguagem C que fornece funções para testar e manipular caracteres.
 
-// Esta é a chave usada para "embaralhar" (criptografar) os caracteres da senha.
-// O valor está em hexadecimal, uma forma comum de representar números em programação.
-#define CHAVE_XOR 0x7B
+// Nome do arquivo onde as senhas serão salvas
+#define ARQUIVO_SENHAS "senhas.txt"
 
-// Função para criptografar as senhas
+// Chave usada para criptografia XOR
+#define CHAVE_XOR 0xAA
+
+// Função para criptografar a senha usando XOR
 void criptografarSenha(char *senha) {
-    for (int i = 0; i < strlen(senha); i++) {
+    for (int i = 0; senha[i] != '\0'; i++) {
         senha[i] ^= CHAVE_XOR;
     }
 }
 
-// Função para descriptografar as senhas
+// Função para descriptografar a senha (mesma operação da criptografia)
 void descriptografarSenha(char *senha) {
-    for (int i = 0; i < strlen(senha); i++) {
-        senha[i] ^= CHAVE_XOR;
-    }
+    criptografarSenha(senha); // XOR reversível
 }
 
-// Função que embaralha os caracteres da senha
-void embaralhar(char *senha, int comprimento) {
-    for (int i = comprimento - 1; i > 0; i--) {
-        int j = rand() % (i + 1);
-        char temp = senha[i];
-        senha[i] = senha[j];
-        senha[j] = temp;
+// Função que gera uma senha aleatória com base nas opções selecionadas
+char *gerarSenha(int tamanho, int usarMaiusculas, int usarMinusculas, int usarNumeros, int usarSimbolos) {
+    static char senha[100]; // senha gerada será armazenada aqui
+    char caracteres[100] = ""; // string que vai conter todos os caracteres possíveis
+
+    // Adiciona grupos de caracteres conforme as opções selecionadas
+    if (usarMaiusculas) strcat(caracteres, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    if (usarMinusculas) strcat(caracteres, "abcdefghijklmnopqrstuvwxyz");
+    if (usarNumeros)    strcat(caracteres, "0123456789");
+    if (usarSimbolos)   strcat(caracteres, "!@#$%&*()-_=+[]{};:,.<>/?");
+
+    // Verifica se ao menos um tipo de caractere foi selecionado
+    if (strlen(caracteres) == 0) {
+        printf("\nErro: Nenhum tipo de caractere foi selecionado para a senha.\n");
+        return NULL;
     }
+
+    // Gera cada caractere da senha escolhendo aleatoriamente da string de caracteres disponíveis
+    for (int i = 0; i < tamanho; i++) {
+        senha[i] = caracteres[rand() % strlen(caracteres)];
+    }
+    senha[tamanho] = '\0'; // finaliza a string com caractere nulo
+    return senha; // retorna o ponteiro para a senha gerada
 }
 
-// Função para gerar a senha com base nas escolhas do usuário
-void gerarSenha(int comprimento, int incluirMaiusculas, int incluirMinusculas, int incluirNumeros, int incluirEspeciais) {
-    const char caracteresMaiusculos[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const char caracteresMinusculos[] = "abcdefghijklmnopqrstuvwxyz";
-    const char caracteresNumeros[] = "0123456789";
-    const char caracteresEspeciais[] = "!@#$%^&*()";
-
-    char caracteresPermitidos[100] = "";
-    char senha[100] = "";
-    int indice = 0;
-
-    srand(time(0));  // Semente aleatória baseada no tempo atual
-
-    // Garante pelo menos um caractere de cada tipo escolhido
-    if (incluirMaiusculas) {
-        senha[indice++] = caracteresMaiusculos[rand() % strlen(caracteresMaiusculos)];
-        strcat(caracteresPermitidos, caracteresMaiusculos);
-    }
-    if (incluirMinusculas) {
-        senha[indice++] = caracteresMinusculos[rand() % strlen(caracteresMinusculos)];
-        strcat(caracteresPermitidos, caracteresMinusculos);
-    }
-    if (incluirNumeros) {
-        senha[indice++] = caracteresNumeros[rand() % strlen(caracteresNumeros)];
-        strcat(caracteresPermitidos, caracteresNumeros);
-    }
-    if (incluirEspeciais) {
-        senha[indice++] = caracteresEspeciais[rand() % strlen(caracteresEspeciais)];
-        strcat(caracteresPermitidos, caracteresEspeciais);
+// Função que salva a senha no arquivo com o serviço, usuário e data/hora da criação
+void salvarSenha(const char *servico, const char *usuario, const char *senha) {
+    FILE *arquivo = fopen(ARQUIVO_SENHAS, "a"); // abre arquivo para acrescentar dados
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo para escrita.\n");
+        return;
     }
 
-    // Preenche o resto da senha
-    for (; indice < comprimento; indice++) {
-        senha[indice] = caracteresPermitidos[rand() % strlen(caracteresPermitidos)];
-    }
-
-    senha[comprimento] = '\0';  // Finaliza a string
-    embaralhar(senha, comprimento);  // Embaralha a senha
-
-    // Exibe a senha
-    printf("Senha gerada: %s\n", senha);
-
-    // Salva a senha em um arquivo com nome do serviço e data/hora
-    char nomeServico[50];
-    printf("Digite o nome do serviço para associar à senha: ");
-    scanf(" %[^\n]", nomeServico);  // Lê até o Enter (inclui espaços)
-
-    // Criptografa a senha
-    criptografarSenha(senha);
-
-    FILE *arquivo = fopen("senhas.txt", "a");  // Abre arquivo no modo de adicionar
-
-    // Adiciona data e hora
+    // Obter data e hora atual para registrar quando a senha foi criada
     time_t agora = time(NULL);
     struct tm *tm_info = localtime(&agora);
     char dataHora[30];
-    strftime(dataHora, 30, "%Y-%m-%d %H:%M:%S", tm_info);
+    strftime(dataHora, sizeof(dataHora), "%d/%m/%Y %H:%M:%S", tm_info);
 
-    fprintf(arquivo, "[%s] Serviço: %s | Senha: %s\n", dataHora, nomeServico, senha);
-    fclose(arquivo);
-
-    printf("Senha salva com sucesso!\n\n");
+     // Escreve no arquivo a linha formatada com serviço, usuário, senha (criptografada) e data/hora
+    fprintf(arquivo, "Servico: %s | Usuario: %s | Senha: %s | Criada em: %s\n", servico, usuario, senha, dataHora);
+    fclose(arquivo); // fecha o arquivo para garantir que dados foram salvos
 }
 
-// Função para exibir todas as senhas salvas
+// Função para listar todas as senhas salvas no arquivo, exibindo as senhas descriptografadas
 void listarSenhas() {
-    FILE *arquivo = fopen("senhas.txt", "r");
+    FILE *arquivo = fopen(ARQUIVO_SENHAS, "r"); // abre o arquivo para leitura
     if (arquivo == NULL) {
         printf("Nenhuma senha salva ainda.\n");
         return;
     }
 
     char linha[200];
+    printf("\n=== Senhas Salvas (descriptografadas) ===\n\n");
 
-    printf("=== Senhas Salvas (descriptografadas) ===\n");
-
+    // Lê o arquivo linha a linha até o fim
     while (fgets(linha, sizeof(linha), arquivo)) {
-        // Encontrar a posição da senha na linha
+        // Procura a substring "Senha: " na linha para encontrar a senha criptografada
         char *ptrSenha = strstr(linha, "Senha: ");
         if (ptrSenha != NULL) {
-            ptrSenha += 7;  // Pular o texto "Senha: "
-
-            // Copiar a senha criptografada para uma nova string
+            ptrSenha += 7; // pula a palavra "Senha: " para pegar só a senha
             char senhaCripto[100];
             int i = 0;
-            // Copia até o fim da linha ou até \n
+            // Copia a senha criptografada para uma variável separada
             while (ptrSenha[i] != '\0' && ptrSenha[i] != '\n' && i < 99) {
                 senhaCripto[i] = ptrSenha[i];
                 i++;
             }
-            senhaCripto[i] = '\0';  // Termina a string
+            senhaCripto[i] = '\0';
 
-            // Descriptografa a senha
+            // Descriptografa a senha para mostrar ao usuário
             descriptografarSenha(senhaCripto);
 
-            // Agora imprime a linha original até "Senha: " + a senha descriptografada
-            // Para manter o serviço na impressão, vamos copiar até "Senha: "
+            // Copia a parte da linha antes da senha para manter o restante da informação
             char linhaServico[200];
             strncpy(linhaServico, linha, ptrSenha - linha);
             linhaServico[ptrSenha - linha] = '\0';
 
+            // Exibe a linha com a senha descriptografada
             printf("%s%s\n", linhaServico, senhaCripto);
         } else {
-            // Caso a linha não tenha senha, imprime normal
+            // Caso a linha não tenha senha (ex: linha em branco), imprime direto
             printf("%s", linha);
         }
     }
@@ -153,70 +121,108 @@ void excluirSenhas() {
     }
 }
 
-int main() {
-    // Configura o idioma (corrige acentuação no Windows)
-    setlocale(LC_ALL, "");
-
+// Função que apresenta o menu interativo para o usuário usar o programa de forma amigável
+void menuInterativo() {
     int opcao;
-
     do {
-        // Exibe o menu para o usuário
-        printf("\n======= MENU =======\n");
-        printf("[1] Gerar nova senha\n");
-        printf("[2] Listar senhas salvas\n");
-        printf("[3] Excluir todas as senhas\n");
-        printf("[4] Sair\n");
-        printf("====================\n");
-        printf("Escolha uma opção: ");
+        printf("\n=== Gerador de Senhas ===\n\n");
+        printf("1. Gerar nova senha\n");
+        printf("2. Listar senhas salvas\n");
+        printf("3. Excluir todas as senhas\n");
+        printf("0. Sair\n");
+        printf("\nEscolha uma opcao: ");
         scanf("%d", &opcao);
+        getchar(); // limpa o buffer do teclado
 
         if (opcao == 1) {
-            int comprimento, incluirMaiusculas, incluirMinusculas, incluirNumeros, incluirEspeciais;
+            char servico[50], usuario[50];
+            int tamanho;
+            int usarMaiusculas = 0, usarMinusculas = 0, usarNumeros = 0, usarSimbolos = 0;
 
-            // Laço que obriga o usuário a digitar um número maior ou igual a 12
-            // Se ele digitar um número menor, mostra uma mensagem de erro e pergunta de novo
-            do {
-                printf("Digite o comprimento da senha (mínimo 12): ");
-                scanf("%d", &comprimento);
+            printf("\nNome do servico: ");
+            fgets(servico, sizeof(servico), stdin);
+            servico[strcspn(servico, "\n")] = '\0';
 
-                if (comprimento < 12) {
-                    printf("Comprimento muito curto. Tente novamente.\n");
-                }
-            } while (comprimento < 12);
+            printf("Nome do usuario: ");
+            fgets(usuario, sizeof(usuario), stdin);
+            usuario[strcspn(usuario, "\n")] = '\0';
 
-            // Pergunta quais tipos de caracteres incluir
-            printf("Incluir letras maiúsculas? (1-Sim / 0-Não): ");
-            scanf("%d", &incluirMaiusculas);
-            printf("Incluir letras minúsculas? (1-Sim / 0-Não): ");
-            scanf("%d", &incluirMinusculas);
-            printf("Incluir números? (1-Sim / 0-Não): ");
-            scanf("%d", &incluirNumeros);
-            printf("Incluir caracteres especiais? (1-Sim / 0-Não): ");
-            scanf("%d", &incluirEspeciais);
+            printf("Tamanho da senha: ");
+            scanf("%d", &tamanho);
+            getchar();
 
-            // Verifica se o usuário escolheu ao menos um tipo de caractere
-            int totalTipos = incluirMaiusculas + incluirMinusculas + incluirNumeros + incluirEspeciais;
+            char resposta;
+            printf("\nIncluir letras maiusculas? (s/n): "); scanf("%c", &resposta); getchar(); usarMaiusculas = (resposta == 's');
+            printf("Incluir letras minusculas? (s/n): "); scanf("%c", &resposta); getchar(); usarMinusculas = (resposta == 's');
+            printf("Incluir numeros? (s/n): "); scanf("%c", &resposta); getchar(); usarNumeros = (resposta == 's');
+            printf("Incluir simbolos? (s/n): "); scanf("%c", &resposta); getchar(); usarSimbolos = (resposta == 's');
 
-            // Verifica se o número de tipos cabe no comprimento da senha
-            if (comprimento < totalTipos) {
-                printf("Erro: A senha deve ter ao menos %d caracteres.\n", totalTipos);
-            } else if (totalTipos == 0) {
-                printf("Erro: Você deve escolher pelo menos um tipo de caractere.\n");
-            } else {
-                gerarSenha(comprimento, incluirMaiusculas, incluirMinusculas, incluirNumeros, incluirEspeciais);
+            // Gera a senha com as opções selecionadas
+            char *senha = gerarSenha(tamanho, usarMaiusculas, usarMinusculas, usarNumeros, usarSimbolos);
+            if (senha) {
+                printf("\nSenha gerada: %s\n", senha);
+                criptografarSenha(senha);
+                salvarSenha(servico, usuario, senha);
+                descriptografarSenha(senha);
             }
 
         } else if (opcao == 2) {
             listarSenhas();
         } else if (opcao == 3) {
             excluirSenhas();
-        } else if (opcao == 4) {
-            printf("Saindo do programa. Até logo!\n");
-        } else {
-            printf("Opção inválida! Tente novamente.\n");
         }
 
-    } while (opcao != 4);
+    } while (opcao != 0);
+}
+
+int main(int argc, char *argv[]) {
+    srand(time(NULL)); // inicializa o gerador de números aleatórios com base no tempo atual
+
+    // Verifica se o programa foi executado sem argumentos (apenas o nome do programa)
+    if (argc == 1) {
+        menuInterativo(); // Executa o menu interativo para o usuário escolher opções manualmente
+    } else {
+        // Variáveis para armazenar configurações passadas por linha de comando
+        int tamanho = 0;
+        int usarMaiusculas = 0, usarMinusculas = 0, usarNumeros = 0, usarSimbolos = 0;
+
+        // strings para armazenar serviço e usuário
+        char servico[50] = "", usuario[50] = "";
+
+        // Loop para ler os argumentos passados na linha de comando
+        for (int i = 1; i < argc; i++) {
+            // Verifica cada argumento e atualiza as variáveis conforme o parâmetro reconhecido
+            if (strcmp(argv[i], "-l") == 0 && i + 1 < argc) {
+                tamanho = atoi(argv[++i]);
+            } else if (strcmp(argv[i], "-M") == 0) {
+                usarMaiusculas = 1;
+            } else if (strcmp(argv[i], "-m") == 0) {
+                usarMinusculas = 1;
+            } else if (strcmp(argv[i], "-n") == 0) {
+                usarNumeros = 1;
+            } else if (strcmp(argv[i], "-s") == 0) {
+                usarSimbolos = 1;
+            } else if (strcmp(argv[i], "-S") == 0 && i + 1 < argc) {
+                strncpy(servico, argv[++i], sizeof(servico));
+            } else if (strcmp(argv[i], "-U") == 0 && i + 1 < argc) {
+                strncpy(usuario, argv[++i], sizeof(usuario));
+            }
+        }
+
+        // Verifica se os parâmetros obrigatórios foram informados: tamanho, serviço e usuário
+        if (tamanho > 0 && strlen(servico) > 0 && strlen(usuario) > 0) {
+            // Gera a senha com as opções indicadas
+            char *senha = gerarSenha(tamanho, usarMaiusculas, usarMinusculas, usarNumeros, usarSimbolos);
+            if (senha) {
+                printf("Senha gerada: %s\n", senha);
+                criptografarSenha(senha);
+                salvarSenha(servico, usuario, senha);
+            }
+        } else {
+            // Caso falte algum parâmetro obrigatório, exibe mensagem de ajuda para o usuário
+            printf("\nParametros insuficientes.\nExemplo: ./geradorSenha -l 12 -M -m -n -s -S Gmail -U usuario@email.com\n\n");
+        }
+    }
 
     return 0;
 }
