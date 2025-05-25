@@ -105,4 +105,4 @@ As senhas são criptografadas usando o algoritmo XOR com uma chave fixa (pode se
 
 📝 Licença
 
-- Este projeto está licenciado sob a MIT License.
+- Este projeto está licenciado sob a GNU General Public License.
